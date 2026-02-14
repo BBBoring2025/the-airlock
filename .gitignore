@@ -13,10 +13,28 @@ build/
 venv/
 .venv/
 
-# IDE / tools
+# Tools
 .claude/
 .pytest_cache/
 
 # OS artifacts
 .DS_Store
 Thumbs.db
+__MACOSX/
+
+# Runtime / generated data (asla commitlenmesin)
+logs/
+tmp/
+data/logs/
+data/quarantine/
+data/reports/
+data/clamav/
+
+# Secrets / keys (private olanlar asla commitlenmesin)
+keys/*.key
+keys/*.pem
+keys/*private*
+keys/*secret*
+
+# Public keys allowed
+!keys/*.pub

@@ -43,7 +43,7 @@ All optional hardware gracefully degrades — the daemon runs without it.
 
 ```bash
 # Raspberry Pi OS Bookworm (64-bit)
-git clone <repo-url> /opt/airlock
+git clone https://github.com/BBBoring2025/the-airlock.git /opt/airlock
 cd /opt/airlock
 sudo scripts/setup.sh
 sudo reboot

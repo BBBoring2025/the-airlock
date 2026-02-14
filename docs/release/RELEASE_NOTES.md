@@ -10,7 +10,7 @@ It scans untrusted USB media, disarms risky content (CDR), and produces a safe o
 - ✅ **Offline Updater Integrity** — Symlink detection + path traversal rejection on UPDATE USB
 - ✅ **Filesystem-Aware Mounting** — FAT/exFAT/NTFS auto-inject uid/gid/umask=0077
 - ✅ **systemd Hardening** — NoNewPrivileges, ProtectSystem=strict, MemoryDenyWriteExecute, PrivateNetwork, UMask=0077
-- ✅ **136 Unit Tests, 0 Failures, 0 Warnings**
+- ✅ **131 Unit Tests Passed, 5 Skipped (PyNaCl), 0 Failures, 0 Warnings**
 - ✅ **MIT License, Clean Release Package**
 
 ### Security Notes & Limitations

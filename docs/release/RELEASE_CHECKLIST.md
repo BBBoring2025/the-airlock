@@ -12,7 +12,7 @@
 ## B. Code Quality
 
 - [x] `python3 -m py_compile` → 0 errors (all .py files)
-- [x] `pytest -q` → 136 passed, 0 failed, 0 warnings
+- [x] `pytest -q` → 131 passed, 5 skipped (PyNaCl), 0 failed, 0 warnings
 - [x] No `shell=True` in app code
 - [x] No `followlinks=True` in app code
 
