@@ -1,0 +1,80 @@
+# THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Ana Yapılandırma
+# /opt/airlock/config/airlock.yaml
+
+version: "5.0.8"
+codename: "FORTRESS-HARDENED"
+
+# Aktif güvenlik politikası
+# Seçenekler: paranoid, balanced, convenient
+active_policy: "balanced"
+
+# Donanım
+hardware:
+  oled_enabled: true
+  oled_address: 0x3C
+  led_mode: "rgb"          # "rgb" veya "neopixel"
+  audio_enabled: true
+  audio_volume: 80         # 0-100
+  button_enabled: true
+  button_pin: 21
+
+# Mount noktaları — privileged helper ile uyumlu OLMALI
+# Helper regex: /mnt/airlock_(source|target|update)
+mount:
+  source: "/mnt/airlock_source"
+  target: "/mnt/airlock_target"
+  update: "/mnt/airlock_update"
+
+# USBGuard entegrasyonu (opsiyonel, varsayılan kapalı)
+# Etkinleştirmek için: enabled: true ve rules.conf yapılandırılmalı
+usb_guard:
+  enabled: false
+  mode: "monitor"   # monitor | enforce
+
+# USB etiketleri
+usb:
+  source_labels: ["KIRLI", "DIRTY", "SOURCE", "INPUT"]
+  target_labels: ["TEMIZ", "CLEAN", "TARGET", "OUTPUT"]
+  update_labels: ["UPDATE", "GÜNCELLEME"]
+
+# Tarama
+scanning:
+  clamav_enabled: true
+  clamav_socket: "/var/run/clamav/clamd.ctl"
+  yara_enabled: true
+  yara_timeout: 30
+  entropy_enabled: true
+  magic_byte_check: true
+  hash_check: true
+
+# CDR
+cdr:
+  pdf_dpi: 200
+  jpeg_quality: 90
+  ocr_enabled: true
+  ocr_languages: "tur+eng"
+  video_cdr: false          # Video re-encode (yavaş, varsayılan kapalı)
+  image_strip_metadata: true
+  require_sandbox: false    # true ise bwrap yoksa CDR reddedilir
+
+# Arşiv
+archive:
+  max_depth: 3
+  max_total_size_mb: 1024
+  max_file_count: 1000
+  max_single_file_mb: 500
+  compression_ratio_limit: 100
+  timeout_seconds: 120
+  encrypted_policy: "block"
+
+# Loglama
+logging:
+  level: "INFO"
+  max_log_size_mb: 50
+  max_log_files: 10
+  log_to_console: true
+
+# Güncelleme
+update:
+  require_signature: true
+  public_key_path: "/opt/airlock/keys/update_verify.pub"

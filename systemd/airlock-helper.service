@@ -1,0 +1,77 @@
+# /etc/systemd/system/airlock-helper.service
+#
+# THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Privileged Helper Service
+#
+# Root olarak çalışır, Unix socket üzerinden SADECE 4 komut kabul eder:
+#   1. mount        — USB mount (belirli path pattern)
+#   2. umount       — USB unmount (belirli path pattern)
+#   3. deauth       — USB deauthorize (sysfs authorized)
+#   4. update_clamav — ClamAV veritabanı güncelle + daemon kontrol
+#
+# Kurulum:
+#   sudo cp /opt/airlock/systemd/airlock-helper.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable airlock-helper.service
+#   sudo systemctl start airlock-helper.service
+
+[Unit]
+Description=THE AIRLOCK v5.0.8 — Privileged Helper (mount/umount/deauth)
+Before=airlock.service
+Wants=airlock.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/airlock
+ExecStartPre=/bin/mkdir -p /run/airlock
+ExecStart=/opt/airlock/venv/bin/python3 -m app.utils.privileged_helper
+Restart=always
+RestartSec=3
+UMask=0077
+
+# ── Ortam Değişkenleri ──
+Environment=PYTHONUNBUFFERED=1
+Environment=LANG=en_US.UTF-8
+
+# ── Güvenlik Sertleştirme ──
+# Root olarak çalışır ama mümkün olduğunca kısıtlı
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictRealtime=true
+
+# ── Minimum Yetkiler (sadece mount/umount + dosya yazma) ──
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_DAC_OVERRIDE
+SystemCallFilter=@system-service @mount
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RemoveIPC=true
+
+# ── Ağ Erişimi Engelle (air-gapped) ──
+RestrictAddressFamilies=AF_UNIX AF_LOCAL
+PrivateNetwork=true
+
+# ── Dosya Sistemi İzinleri ──
+ProtectSystem=full
+ReadWritePaths=/run/airlock /mnt/airlock_source /mnt/airlock_target /mnt/airlock_update /sys/bus/usb/devices /var/lib/clamav
+ReadOnlyPaths=/opt/airlock/app /opt/airlock/config
+
+# ── Kaynak Limitleri ──
+LimitNOFILE=256
+LimitNPROC=16
+MemoryMax=128M
+TasksMax=16
+
+# ── Loglama ──
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=airlock-helper
+
+[Install]
+WantedBy=multi-user.target

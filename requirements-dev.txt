@@ -1,0 +1,7 @@
+# THE AIRLOCK v5.0.8 — Development Dependencies
+#
+# Kurulum:
+#   pip install -r requirements-dev.txt
+-r requirements.txt
+pytest==8.3.4
+pytest-cov==6.0.0

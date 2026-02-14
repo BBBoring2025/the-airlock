@@ -1,0 +1,22 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Packaging
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE / tools
+.claude/
+.pytest_cache/
+
+# OS artifacts
+.DS_Store
+Thumbs.db

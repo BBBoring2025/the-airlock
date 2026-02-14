@@ -1,0 +1,13 @@
+# THE AIRLOCK v5.0.8 — Hardware Dependencies (Pi-specific, optional)
+#
+# Bu paketler Raspberry Pi donanım modülleri için gereklidir.
+# OLED, LED, ses ve buton modülleri bu paketler olmadan graceful degrade eder.
+#
+# Kurulum:
+#   pip install -r requirements-hardware.txt
+luma.oled==3.13.0
+luma.core==2.4.2
+pygame==2.6.1
+numpy==2.1.3
+# RPi.GPIO==0.7.1      # Sadece Raspberry Pi'de — macOS/Linux'ta kurulmaz
+# rpi-ws281x==5.0.0    # Sadece Raspberry Pi'de — NeoPixel LED
