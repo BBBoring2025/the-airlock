@@ -1,4 +1,4 @@
-# THE AIRLOCK v5.0.8 — Hardware Dependencies (Pi-specific, optional)
+# THE AIRLOCK v5.1.1 — Hardware Dependencies (Pi-specific, optional)
 #
 # Bu paketler Raspberry Pi donanım modülleri için gereklidir.
 # OLED, LED, ses ve buton modülleri bu paketler olmadan graceful degrade eder.

@@ -2,7 +2,7 @@
 """
 Ses Efektleri Modülü.
 
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Sesli Geri Bildirim
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Sesli Geri Bildirim
 
 Olaylar ve sesleri:
     startup          — Kısa melodi (sistem açıldı)

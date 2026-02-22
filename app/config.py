@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Merkezi Yapılandırma Modülü
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Merkezi Yapılandırma Modülü
 
 Tüm yapılandırma bu modülden okunur.
 YAML dosyasından yüklenir, sabitler burada tanımlanır.
@@ -25,7 +25,7 @@ logger = logging.getLogger("AIRLOCK.CONFIG")
 # SÜRÜM
 # ─────────────────────────────────────────────
 
-VERSION = "5.0.8"
+VERSION = "5.1.1"
 CODENAME = "FORTRESS-HARDENED"
 
 # ─────────────────────────────────────────────
@@ -40,6 +40,7 @@ DIRECTORIES: Dict[str, Path] = {
     "config": BASE_DIR / "config",
     "policies": BASE_DIR / "config" / "policies",
     "tmp": BASE_DIR / "tmp",
+    "data": BASE_DIR / "data",
     "logs": BASE_DIR / "data" / "logs",
     "quarantine": BASE_DIR / "data" / "quarantine",
     "yara_rules": BASE_DIR / "data" / "yara_rules",
@@ -400,6 +401,17 @@ class AirlockConfig:
         default_factory=lambda: DIRECTORIES["keys"] / "update_verify.pub"
     )
 
+    # Rapor imzalama doğrulaması (AYRI keypair — update'ten bağımsız)
+    report_public_key_path: Path = field(
+        default_factory=lambda: DIRECTORIES["keys"] / "report_verify.pub"
+    )
+
+    def __post_init__(self) -> None:
+        """Politika bazlı otomatik ayarlar."""
+        # Paranoid politikada sandbox zorunlu
+        if self.active_policy == "paranoid":
+            self.cdr_require_sandbox = True
+
     @property
     def active_policy_settings(self) -> SecurityPolicy:
         """Aktif güvenlik politikası ayarlarını döndür."""
@@ -452,6 +464,7 @@ class AirlockConfig:
         arch = raw.get("archive", {})
         log = raw.get("logging", {})
         upd = raw.get("update", {})
+        rpt = raw.get("report", {})
         mnt = raw.get("mount", {})
         usbg = raw.get("usb_guard", {})
 
@@ -515,6 +528,10 @@ class AirlockConfig:
             require_update_signature=upd.get("require_signature", True),
             update_public_key_path=Path(
                 upd.get("public_key_path", str(DIRECTORIES["keys"] / "update_verify.pub"))
+            ),
+            # Rapor imzalama doğrulaması (update'ten AYRI keypair)
+            report_public_key_path=Path(
+                rpt.get("verify_key_path", str(DIRECTORIES["keys"] / "report_verify.pub"))
             ),
         )
 

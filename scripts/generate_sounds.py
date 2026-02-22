@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Ses Dosyası Üretici
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Ses Dosyası Üretici
 
 numpy ile sine wave tabanlı WAV ses dosyaları üretir.
 Kurulumda çalıştırılır, /opt/airlock/data/sounds/ dizinine yazar.
@@ -273,7 +273,7 @@ def generate_all(output_dir: Path) -> int:
 def main() -> int:
     """Ana giriş noktası."""
     parser = argparse.ArgumentParser(
-        description="THE AIRLOCK v5.0.8 — Ses Dosyası Üretici",
+        description="THE AIRLOCK v5.1.1 — Ses Dosyası Üretici",
     )
     parser.add_argument(
         "--output",

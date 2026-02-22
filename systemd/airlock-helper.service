@@ -1,6 +1,6 @@
 # /etc/systemd/system/airlock-helper.service
 #
-# THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Privileged Helper Service
+# THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Privileged Helper Service
 #
 # Root olarak çalışır, Unix socket üzerinden SADECE 4 komut kabul eder:
 #   1. mount        — USB mount (belirli path pattern)
@@ -15,7 +15,7 @@
 #   sudo systemctl start airlock-helper.service
 
 [Unit]
-Description=THE AIRLOCK v5.0.8 — Privileged Helper (mount/umount/deauth)
+Description=THE AIRLOCK v5.1.1 — Privileged Helper (mount/umount/deauth)
 Before=airlock.service
 Wants=airlock.service
 

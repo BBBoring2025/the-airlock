@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — KATMAN 7: İmzalı Rapor ve Manifest Üretimi
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — KATMAN 7: İmzalı Rapor ve Manifest Üretimi
 
 Her tarama oturumu sonunda:
   1. JSON rapor dosyası üretilir (yapılandırılmış format)
@@ -278,7 +278,7 @@ class ReportGenerator:
             return False
 
         if public_key_path is None:
-            public_key_path = self._config.update_public_key_path
+            public_key_path = self._config.report_public_key_path
 
         report_copy = {k: v for k, v in report.items() if k != "signature"}
         report_json = json.dumps(

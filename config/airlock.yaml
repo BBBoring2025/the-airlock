@@ -1,7 +1,7 @@
-# THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Ana Yapılandırma
+# THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Ana Yapılandırma
 # /opt/airlock/config/airlock.yaml
 
-version: "5.0.8"
+version: "5.1.1"
 codename: "FORTRESS-HARDENED"
 
 # Aktif güvenlik politikası
@@ -78,3 +78,8 @@ logging:
 update:
   require_signature: true
   public_key_path: "/opt/airlock/keys/update_verify.pub"
+
+# Rapor imzalama (update'ten AYRI keypair)
+report:
+  signing_key_path: "/opt/airlock/keys/report_signing.key"
+  verify_key_path: "/opt/airlock/keys/report_verify.pub"

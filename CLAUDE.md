@@ -1,4 +1,4 @@
-# THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Proje Talimatları
+# THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Proje Talimatları
 
 ## Sen Nesin?
 Bu proje Raspberry Pi 5 (8GB) üzerinde çalışan air-gapped USB sanitization istasyonudur. Güvenilmeyen USB'deki dosyaları tarar, temizler (CDR), güvenli USB'ye aktarır.

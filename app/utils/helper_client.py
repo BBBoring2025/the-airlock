@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Privileged Helper Istemci
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Privileged Helper Istemci
 
 airlock (non-root) servisinden privileged helper'a Unix socket
 uzerinden komut gonderir.

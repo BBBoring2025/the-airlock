@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — KATMAN 3: Güvenli Mount Yönetimi
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — KATMAN 3: Güvenli Mount Yönetimi
 
 USB'leri ASLA otomount'a bırakmayız.
   Kaynak USB: SADECE read-only mount (ro,noexec,nosuid,nodev)

@@ -1,6 +1,6 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-# THE AIRLOCK v5.0.8 — GitHub Release Script
+# THE AIRLOCK v5.1.1 — GitHub Release Script
 # Bu dosyayı çalıştırma, adımları tek tek Terminal'e yapıştır!
 # ═══════════════════════════════════════════════════════════════
 
@@ -16,7 +16,7 @@
 cd ~/Desktop/"the airlockV5.01"
 git init
 git add .
-git commit -m "THE AIRLOCK v5.0.8 — Fortress-Hardened Final Release
+git commit -m "THE AIRLOCK v5.1.1 — Fortress-Hardened Final Release
 
 7-layer security architecture:
 - BadUSB HID/CDC deauth protection
@@ -38,22 +38,22 @@ git branch -M main
 git push -u origin main
 
 # ─── ADIM 4: Release tag oluştur ve push et ───
-git tag -a v5.0.8 -m "v5.0.8 Final Release — Fortress-Hardened"
-git push origin v5.0.8
+git tag -a v5.1.1 -m "v5.1.1 Final Release — Fortress-Hardened"
+git push origin v5.1.1
 
 # ─── ADIM 5: SHA256 checksum oluştur ───
 cd ~/Desktop
-cp "the-airlock-v5.0.8-final.zip" .  # zip'in burada olduğundan emin ol
-shasum -a 256 "the-airlock-v5.0.8-final.zip" > SHA256SUMS.txt
+cp "the-airlock-v5.1.1-final.zip" .  # zip'in burada olduğundan emin ol
+shasum -a 256 "the-airlock-v5.1.1-final.zip" > SHA256SUMS.txt
 cat SHA256SUMS.txt
 
 # ─── ADIM 6: GitHub Release sayfası ───
 # https://github.com/KULLANICI_ADIN/the-airlock/releases/new adresine git
-# Tag: v5.0.8 seç
-# Title: v5.0.8 — Final Release (Fortress-Hardened)
+# Tag: v5.1.1 seç
+# Title: v5.1.1 — Final Release (Fortress-Hardened)
 # Description: RELEASE_NOTES.md içeriğini yapıştır
 # Assets olarak şunları sürükle:
-#   - the-airlock-v5.0.8-final.zip
+#   - the-airlock-v5.1.1-final.zip
 #   - SHA256SUMS.txt
 # "Publish release" tıkla
 

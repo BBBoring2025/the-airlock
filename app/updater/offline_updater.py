@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Güvenli Offline Güncelleme Sistemi
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Güvenli Offline Güncelleme Sistemi
 
 UPDATE USB ile ClamAV imzaları, YARA kuralları ve hash listesi güncellenir.
 
@@ -568,7 +568,20 @@ class OfflineUpdater:
 
     def _apply_hash_update(self, hash_file: Path) -> bool:
         """Bilinen kötü hash listesini güncelle."""
-        dest = DIRECTORIES["config"] / "known_bad_hashes.txt"
+        dest = DIRECTORIES["data"] / "known_bad_hashes.txt"
+        legacy_dest = DIRECTORIES["config"] / "known_bad_hashes.txt"
+
+        # Geriye dönük uyumluluk: eski konumdan yeni konuma taşı (rollback/backup için)
+        if not dest.exists() and legacy_dest.exists():
+            try:
+                shutil.copy2(legacy_dest, dest)
+                self._logger.warning("Legacy hash list migrated: %s → %s", legacy_dest, dest)
+            except OSError as exc:
+                self._logger.warning(
+                    "Legacy hash list bulundu ama taşınamadı (%s). Backup/rollback olmayabilir.",
+                    exc,
+                )
+
 
         try:
             # Mevcut listeyi yedekle

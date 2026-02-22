@@ -2,7 +2,7 @@
 """
 SSD1306 OLED Ekran Kontrolü (128x64 pixel, I2C).
 
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Katman: Kullanıcı Arayüzü
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Katman: Kullanıcı Arayüzü
 
 Ekran Durumları:
     SPLASH      — Açılış logosu + versiyon
@@ -62,7 +62,7 @@ def _load_version() -> str:
     try:
         return _VERSION_FILE.read_text(encoding="utf-8").strip()
     except (OSError, ValueError):
-        return "5.0.8"
+        return "5.1.1"
 
 
 def _get_font(size: int = _DEFAULT_FONT_SIZE) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -203,7 +203,7 @@ class OLEDDisplay:
                     draw = ImageDraw.Draw(img)
 
                     # Başlık
-                    self._draw_header(draw, "THE AIRLOCK v5.0.8")
+                    self._draw_header(draw, "THE AIRLOCK v5.1.1")
 
                     # USB bekleniyor mesajı
                     dot_str = "." * (dots % 4)
@@ -231,7 +231,7 @@ class OLEDDisplay:
         """
         Açılış ekranı.
 
-        THE AIRLOCK v5.0.8
+        THE AIRLOCK v5.1.1
         ═══════════════════
          FORTRESS-HARDENED
           versiyon x.y.z
@@ -241,7 +241,7 @@ class OLEDDisplay:
         def _draw(draw: ImageDraw.ImageDraw, img: Image.Image) -> None:
             # Üst başlık
             draw.rectangle([0, 0, self._width - 1, 15], fill=1)
-            draw.text((8, 1), "THE AIRLOCK v5.0.8", font=self._font, fill=0)
+            draw.text((8, 1), "THE AIRLOCK v5.1.1", font=self._font, fill=0)
 
             # Ayırıcı çizgi
             draw.line([(0, 18), (self._width - 1, 18)], fill=1)
@@ -471,7 +471,7 @@ class OLEDDisplay:
         """Kapanış mesajı ekranı."""
 
         def _draw(draw: ImageDraw.ImageDraw, img: Image.Image) -> None:
-            draw.text((10, 10), "THE AIRLOCK v5.0.8", font=self._font, fill=1)
+            draw.text((10, 10), "THE AIRLOCK v5.1.1", font=self._font, fill=1)
             draw.line([(10, 24), (118, 24)], fill=1)
             draw.text((20, 30), "Kapatiliyor...", font=self._font, fill=1)
             draw.text((25, 48), "Gule gule!", font=self._font_small, fill=1)

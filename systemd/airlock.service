@@ -1,6 +1,6 @@
 # /etc/systemd/system/airlock.service
 #
-# THE AIRLOCK v5.0.8 FORTRESS-HARDENED — USB Sanitization Station
+# THE AIRLOCK v5.1.1 FORTRESS-HARDENED — USB Sanitization Station
 #
 # mount/umount/deauthorize artık privileged helper üzerinden yapılır.
 # Bu servis NON-ROOT çalışır, hiçbir capability gerektirmez.
@@ -13,7 +13,7 @@
 #   sudo systemctl start airlock-helper.service airlock.service
 
 [Unit]
-Description=THE AIRLOCK v5.0.8 FORTRESS-HARDENED — USB Sanitization Station
+Description=THE AIRLOCK v5.1.1 FORTRESS-HARDENED — USB Sanitization Station
 After=multi-user.target airlock-helper.service
 Wants=clamav-daemon.service
 Requires=airlock-helper.service

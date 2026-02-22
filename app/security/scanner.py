@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — KATMAN 5: Çok Motorlu Dosya Tarama
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — KATMAN 5: Çok Motorlu Dosya Tarama
 
 4 tarama motoru:
   1. ClamAV — 8M+ malware imzası (pyclamd daemon veya clamscan fallback)
@@ -23,6 +23,7 @@ import hashlib
 import logging
 import math
 import subprocess
+import shutil
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -640,7 +641,7 @@ class FileScanner:
         """
         SHA-256 hash'ini bilinen kötü hash listesiyle karşılaştır.
 
-        Hash listesi /opt/airlock/config/known_bad_hashes.txt dosyasından okunur.
+        Hash listesi /opt/airlock/data/known_bad_hashes.txt dosyasından okunur.
         İlk çağrıda yüklenir, sonrakilerde cache'ten kontrol edilir (O(1)).
 
         Returns:
@@ -667,7 +668,25 @@ class FileScanner:
         # ile başlayan satırlar yorum satırı.
         """
         hashes: Set[str] = set()
-        hash_file = DIRECTORIES["config"] / "known_bad_hashes.txt"
+        hash_file = DIRECTORIES["data"] / "known_bad_hashes.txt"
+        legacy_hash_file = DIRECTORIES["config"] / "known_bad_hashes.txt"
+
+        # Geriye dönük uyumluluk: legacy konumu bir kez migrate et (v5.1.0 → v5.1.1)
+        if not hash_file.exists() and legacy_hash_file.exists():
+            try:
+                shutil.copy2(legacy_hash_file, hash_file)
+                self._logger.warning(
+                    "Legacy hash list migrated: %s → %s",
+                    legacy_hash_file,
+                    hash_file,
+                )
+            except OSError as exc:
+                self._logger.warning(
+                    "Legacy hash list bulundu ama taşınamadı (%s). Legacy dosya okunacak: %s",
+                    exc,
+                    legacy_hash_file,
+                )
+                hash_file = legacy_hash_file
 
         if not hash_file.exists():
             self._logger.info(

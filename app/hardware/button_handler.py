@@ -2,7 +2,7 @@
 """
 Fiziksel Buton Kontrolcüsü (GPIO 21).
 
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Kullanıcı Etkileşimi
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Kullanıcı Etkileşimi
 
 Davranışlar:
     Kısa basış  (< 3 saniye) — Güvenli çıkar (safe eject callback)

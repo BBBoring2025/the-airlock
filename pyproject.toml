@@ -1,0 +1,32 @@
+# THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Proje Konfigürasyonu
+
+[project]
+name = "the-airlock"
+version = "5.1.1"
+description = "Air-gapped USB sanitization station"
+requires-python = ">=3.11"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "W",    # pycodestyle warnings
+    "S",    # flake8-bandit (güvenlik kontrolleri)
+    "B",    # flake8-bugbear
+    "I",    # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test dosyalarında assert kullanımı ve hardcoded bağlantı OK
+"tests/**" = ["S101", "S106", "S108"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

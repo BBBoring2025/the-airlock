@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — KATMAN 6: Content Disarm & Reconstruction
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — KATMAN 6: Content Disarm & Reconstruction
 
 EN KRİTİK MODÜL. Dosyaları "silahsızlandırır".
 

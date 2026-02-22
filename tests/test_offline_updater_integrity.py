@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Offline Updater Integrity Tests
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Offline Updater Integrity Tests
 
 Test edilenler:
   1. Symlink tespiti → UPDATE reddedilmeli
@@ -141,6 +141,176 @@ class TestUpdateIntegrityValidation(unittest.TestCase):
         manifest = self._create_manifest({})
         # ValueError fırlatılmamalı
         self.updater._validate_update_integrity(self.update_root, manifest)
+
+
+# ═══════════════════════════════════════════════
+# Ed25519 Manifest İmza Doğrulama Testleri
+# ═══════════════════════════════════════════════
+
+try:
+    from nacl.signing import SigningKey  # noqa: PLC0415
+    HAS_NACL = True
+except ImportError:
+    HAS_NACL = False
+
+
+@unittest.skipUnless(HAS_NACL, "PyNaCl required for signature tests")
+class TestManifestSignatureVerification(unittest.TestCase):
+    """Ed25519 manifest imza doğrulama testleri.
+
+    Gerçek Ed25519 keypair üretir (PyNaCl) — harici dosya gerektirmez.
+    """
+
+    def setUp(self) -> None:
+        """Test ortamı: geçici dizin + UPDATE/ + Ed25519 keypair."""
+        import base64
+        from nacl.signing import SigningKey as _SK
+
+        self.tmpdir = tempfile.mkdtemp(prefix="airlock_sig_test_")
+        self.usb_root = Path(self.tmpdir) / "usb"
+        self.usb_root.mkdir()
+        self.update_dir = self.usb_root / "UPDATE"
+        self.update_dir.mkdir()
+
+        # Anahtar dizini
+        self.keys_dir = Path(self.tmpdir) / "keys"
+        self.keys_dir.mkdir()
+
+        # Ed25519 keypair üret
+        self.signing_key = _SK.generate()
+        self.verify_key = self.signing_key.verify_key
+
+        # Public key dosyasına yaz (Base64)
+        self.pub_key_path = self.keys_dir / "update_verify.pub"
+        self.pub_key_path.write_text(
+            base64.b64encode(bytes(self.verify_key)).decode("ascii") + "\n",
+            encoding="ascii",
+        )
+
+    def tearDown(self) -> None:
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def _create_signed_manifest(
+        self, manifest_data: dict, signing_key: object | None = None
+    ) -> str:
+        """Manifest oluştur ve Ed25519 ile imzala."""
+        import base64
+
+        sk = signing_key or self.signing_key
+        manifest_text = json.dumps(manifest_data)
+        manifest_bytes = manifest_text.encode("utf-8")
+
+        # manifest.json yaz
+        manifest_path = self.update_dir / "manifest.json"
+        manifest_path.write_text(manifest_text, encoding="utf-8")
+
+        # İmzala
+        signed = sk.sign(manifest_bytes)
+        sig_b64 = base64.b64encode(signed.signature).decode("ascii")
+
+        # manifest.json.sig yaz
+        sig_path = self.update_dir / "manifest.json.sig"
+        sig_path.write_text(sig_b64, encoding="ascii")
+
+        return manifest_text
+
+    def _make_updater(self, require_sig: bool = True) -> OfflineUpdater:
+        """Test config ile OfflineUpdater oluştur."""
+        cfg = AirlockConfig(
+            require_update_signature=require_sig,
+            update_public_key_path=self.pub_key_path,
+        )
+        return OfflineUpdater(config=cfg)
+
+    def test_valid_signature_accepted(self) -> None:
+        """Geçerli Ed25519 imza → is_valid=True."""
+        # Manifest + bir bileşen oluştur
+        clamav_dir = self.update_dir / "clamav"
+        clamav_dir.mkdir()
+        # ClamAV dosyası oluştur (boyut limitleri dahilinde)
+        cvd_file = clamav_dir / "daily.cvd"
+        cvd_file.write_bytes(b"\x00" * (200 * 1024))  # 200 KB
+
+        self._create_signed_manifest({
+            "version": "test",
+            "files": {},
+        })
+
+        updater = self._make_updater(require_sig=True)
+        result = updater.verify_update_package(self.usb_root)
+
+        self.assertTrue(result.is_valid)
+
+    def test_invalid_signature_rejected(self) -> None:
+        """Farklı anahtar ile imzalanmış → is_valid=False."""
+        from nacl.signing import SigningKey as _SK
+
+        # Farklı bir anahtarla imzala
+        wrong_key = _SK.generate()
+        self._create_signed_manifest(
+            {"version": "test", "files": {}},
+            signing_key=wrong_key,
+        )
+
+        # Bir bileşen oluştur
+        clamav_dir = self.update_dir / "clamav"
+        clamav_dir.mkdir()
+        (clamav_dir / "daily.cvd").write_bytes(b"\x00" * (200 * 1024))
+
+        updater = self._make_updater(require_sig=True)
+        result = updater.verify_update_package(self.usb_root)
+
+        self.assertFalse(result.is_valid)
+        self.assertIsNotNone(result.rejection_reason)
+        # İmza doğrulama başarısız mesajı olmalı
+        reason_lower = result.rejection_reason.lower()
+        self.assertTrue(
+            "imza" in reason_lower or "signature" in reason_lower
+            or "başarısız" in reason_lower
+        )
+
+    def test_missing_signature_rejected(self) -> None:
+        """İmza dosyası yok + require_update_signature=True → is_valid=False."""
+        # manifest.json yaz AMA .sig yok
+        manifest_data = {"version": "test", "files": {}}
+        manifest_path = self.update_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(manifest_data), encoding="utf-8")
+
+        # Bileşen oluştur
+        clamav_dir = self.update_dir / "clamav"
+        clamav_dir.mkdir()
+        (clamav_dir / "daily.cvd").write_bytes(b"\x00" * (200 * 1024))
+
+        updater = self._make_updater(require_sig=True)
+        result = updater.verify_update_package(self.usb_root)
+
+        self.assertFalse(result.is_valid)
+        self.assertIn("sig", result.rejection_reason.lower())
+
+    def test_tampered_manifest_rejected(self) -> None:
+        """İmza geçerli ama manifest sonradan değiştirilmiş → is_valid=False."""
+        # Orijinal manifest'i imzala
+        self._create_signed_manifest({
+            "version": "original",
+            "files": {},
+        })
+
+        # Manifest'i değiştir (imza eski kalacak)
+        manifest_path = self.update_dir / "manifest.json"
+        manifest_path.write_text(
+            json.dumps({"version": "TAMPERED", "files": {}}),
+            encoding="utf-8",
+        )
+
+        # Bileşen oluştur
+        clamav_dir = self.update_dir / "clamav"
+        clamav_dir.mkdir()
+        (clamav_dir / "daily.cvd").write_bytes(b"\x00" * (200 * 1024))
+
+        updater = self._make_updater(require_sig=True)
+        result = updater.verify_update_package(self.usb_root)
+
+        self.assertFalse(result.is_valid)
 
 
 if __name__ == "__main__":

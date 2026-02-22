@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Entry Point
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Entry Point
 
 systemd servis olarak çalıştırılır:
     ExecStart=/opt/airlock/venv/bin/python3 /opt/airlock/app/main.py

@@ -2,7 +2,7 @@
 """
 RGB LED Kontrolcüsü.
 
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Görsel Durum Göstergesi
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Görsel Durum Göstergesi
 
 Renk Kodları:
     idle     — Mavi (sabit): Bekleme modu

@@ -1,1 +1,16 @@
-44bb612f584e3e999ca440564c07f64619b80316528c705c12c701ecb9bfc546  the-airlock-v5.0.8-final.zip
+# SHA256SUMS (Release Asset)
+
+Bu dosya repo içinde *bilgilendirme amaçlıdır*.
+
+✅ Doğru doğrulama yöntemi:
+- Release paketinin (the-airlock-vX.Y.Z-final.zip) SHA-256 değeri,
+  GitHub Release'de ayrı bir asset olarak yayınlanan `SHA256SUMS.txt` dosyasıyla
+  doğrulanmalıdır.
+
+⚠️ Not:
+- Aynı zip'in içinde "kendi checksum'u" tutulursa self-referential olur ve
+  pratikte güvenilir doğrulama sağlamaz.
+- Bu yüzden checksum dosyası zip'in *dışında* yayınlanır.
+
+Örnek komut:
+  shasum -a 256 the-airlock-vX.Y.Z-final.zip > SHA256SUMS.txt

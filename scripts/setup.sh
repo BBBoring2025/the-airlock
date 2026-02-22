@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
-# THE AIRLOCK v5.0.8 FORTRESS — Tam Kurulum Scripti
+# THE AIRLOCK v5.1.1 FORTRESS — Tam Kurulum Scripti
 #
 # Raspberry Pi 5 (8GB) — Raspberry Pi OS Bookworm (64-bit)
 #
@@ -43,7 +43,7 @@ NC='\033[0m'
 # ── Sabitler ──
 AIRLOCK_DIR="/opt/airlock"
 AIRLOCK_USER="airlock"
-AIRLOCK_VERSION="5.0.8"
+AIRLOCK_VERSION="5.1.1"
 
 # ── Yardımcı Fonksiyonlar ──
 log_step() {
@@ -97,7 +97,7 @@ PACKAGES=(
     # Python
     python3-pip python3-venv python3-dev python3-pil python3-smbus
     # Araçlar
-    i2c-tools git jq
+    i2c-tools git jq bubblewrap
     # ClamAV
     clamav clamav-daemon
     # Grafik / PDF
@@ -348,9 +348,11 @@ fi
 log_step 13 "Ed25519 anahtarları üretiliyor"
 
 if [ -f "${AIRLOCK_DIR}/scripts/generate_keys.sh" ]; then
-    bash "${AIRLOCK_DIR}/scripts/generate_keys.sh"
+    # generate_keys.sh varsayılan modda SADECE report keypair üretir
+    # update_verify.pub yoksa hata verir — bu beklenen davranıştır
+    bash "${AIRLOCK_DIR}/scripts/generate_keys.sh" || true
 else
-    # Fallback: Python ile üret
+    # Fallback: Python ile SADECE report keypair üret
     "${AIRLOCK_DIR}/venv/bin/python3" -c "
 from pathlib import Path
 import sys
@@ -358,15 +360,23 @@ sys.path.insert(0, '${AIRLOCK_DIR}')
 from app.utils.crypto import generate_keypair
 generate_keypair(
     private_key_path=Path('${AIRLOCK_DIR}/keys/report_signing.key'),
-    public_key_path=Path('${AIRLOCK_DIR}/keys/update_verify.pub'),
+    public_key_path=Path('${AIRLOCK_DIR}/keys/report_verify.pub'),
 )
-print('Ed25519 anahtarları üretildi')
+print('Ed25519 report anahtarları üretildi')
 "
 fi
 
 chown "${AIRLOCK_USER}:${AIRLOCK_USER}" "${AIRLOCK_DIR}/keys/"*
 chmod 600 "${AIRLOCK_DIR}/keys/report_signing.key"
-chmod 644 "${AIRLOCK_DIR}/keys/update_verify.pub"
+chmod 644 "${AIRLOCK_DIR}/keys/report_verify.pub"
+
+# update_verify.pub varsa izinleri ayarla
+if [ -f "${AIRLOCK_DIR}/keys/update_verify.pub" ]; then
+    chmod 644 "${AIRLOCK_DIR}/keys/update_verify.pub"
+else
+    log_warn "update_verify.pub bulunamadı — offline güncellemeler çalışmayacak"
+    log_warn "Vendor update public key'ini keys/ dizinine kopyalayın"
+fi
 log_ok "Anahtarlar üretildi ve izinleri ayarlandı"
 
 # ═══════════════════════════════════════════
@@ -381,7 +391,7 @@ chown root:root /usr/local/bin/airlock-deauth
 log_ok "airlock-deauth scripti kuruldu: /usr/local/bin/airlock-deauth"
 
 cat > /etc/udev/rules.d/99-airlock-usb.rules << 'UDEV_EOF'
-# THE AIRLOCK v5.0.8 FORTRESS — USB Güvenlik Kuralları
+# THE AIRLOCK v5.1.1 FORTRESS — USB Güvenlik Kuralları
 # Shell çağırmaz — doğrudan airlock-deauth scripti ile deauthorize eder.
 #
 # HID cihazlarını engelle (Rubber Ducky / BadUSB koruması)
@@ -425,7 +435,7 @@ log_step 16 "Swap optimizasyonu yapılıyor"
 
 if ! grep -q "vm.swappiness" /etc/sysctl.d/99-airlock.conf 2>/dev/null; then
     cat > /etc/sysctl.d/99-airlock.conf << 'SYSCTL_EOF'
-# THE AIRLOCK v5.0.8 — Swap ve bellek optimizasyonu
+# THE AIRLOCK v5.1.1 — Swap ve bellek optimizasyonu
 vm.swappiness=10
 vm.vfs_cache_pressure=50
 SYSCTL_EOF
@@ -448,7 +458,7 @@ log_ok "EICAR test virüsü oluşturuldu"
 # Boş hash listesi
 if [ ! -f "${AIRLOCK_DIR}/config/known_bad_hashes.txt" ]; then
     cat > "${AIRLOCK_DIR}/config/known_bad_hashes.txt" << 'HASH_EOF'
-# THE AIRLOCK v5.0.8 — Bilinen Kötü Dosya Hash'leri (SHA-256)
+# THE AIRLOCK v5.1.1 — Bilinen Kötü Dosya Hash'leri (SHA-256)
 # Her satırda bir hash. # ile başlayan satırlar yorum.
 # Format: sha256_hash  açıklama (opsiyonel)
 #

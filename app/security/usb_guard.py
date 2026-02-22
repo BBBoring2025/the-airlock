@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — KATMAN 1: USB Cihaz Sınıfı Kontrolü
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — KATMAN 1: USB Cihaz Sınıfı Kontrolü
 
 BadUSB / Rubber Ducky korumasının TEMELİ.
 USB takıldığında cihazın kendini nasıl tanıttığını kontrol eder.

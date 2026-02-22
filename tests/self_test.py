@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Self-Test Suite
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Self-Test Suite
 
 Kurulumdan sonra ve periyodik olarak çalıştırılır.
 Tüm bileşenleri test eder.
@@ -84,7 +84,7 @@ class TestResult:
 
 
 class AirlockSelfTest:
-    """THE AIRLOCK v5.0.8 Self-Test Suite."""
+    """THE AIRLOCK v5.1.1 Self-Test Suite."""
 
     def __init__(self) -> None:
         self.results: List[TestResult] = []
@@ -96,7 +96,7 @@ class AirlockSelfTest:
     def run_all(self) -> Tuple[int, int, int]:
         """Tüm testleri çalıştır. Returns (pass, fail, skip)."""
         print(f"\n{_BOLD}═══════════════════════════════════════════════════{_NC}")
-        print(f"{_BOLD}  THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Self-Test Suite{_NC}")
+        print(f"{_BOLD}  THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Self-Test Suite{_NC}")
         print(f"{_BOLD}═══════════════════════════════════════════════════{_NC}")
 
         print(f"\n{_BOLD}── 1. DONANIM TESTLERİ ──{_NC}")
@@ -632,14 +632,14 @@ startxref
 
             try:
                 generate_keypair(priv_path, pub_path)
-                test_data = b"THE AIRLOCK v5.0.8 FORTRESS-HARDENED - test data"
+                test_data = b"THE AIRLOCK v5.1.1 FORTRESS-HARDENED - test data"
 
                 signature = sign_data(test_data, priv_path)
                 is_valid = verify_signature(test_data, signature, pub_path)
 
                 if is_valid:
                     # Değiştirilmiş veriyle doğrulama → False olmalı
-                    tampered = b"THE AIRLOCK v5.0.8 FORTRESS-HARDENED - TAMPERED"
+                    tampered = b"THE AIRLOCK v5.1.1 FORTRESS-HARDENED - TAMPERED"
                     is_invalid = verify_signature(tampered, signature, pub_path)
                     if not is_invalid:
                         self._record("T22", "Ed25519 imza", PASS,

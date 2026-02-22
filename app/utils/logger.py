@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Yapılandırılmış Loglama
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Yapılandırılmış Loglama
 
 Özellikler:
   - Dosya + konsol çıktısı

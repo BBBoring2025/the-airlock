@@ -8,6 +8,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+a1/
 
 # Virtual environments
 venv/
@@ -38,3 +39,14 @@ keys/*secret*
 
 # Public keys allowed
 !keys/*.pub
+
+# Benchmark output
+benchmark_results.json
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Logs
+*.log

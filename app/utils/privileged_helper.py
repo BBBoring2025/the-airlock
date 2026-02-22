@@ -1,5 +1,5 @@
 """
-THE AIRLOCK v5.0.8 FORTRESS-HARDENED — Ayricalikli Yardimci Sunucu
+THE AIRLOCK v5.1.1 FORTRESS-HARDENED — Ayricalikli Yardimci Sunucu
 
 Root olarak calisan ayri bir systemd servisi.
 Unix socket uzerinden SADECE 4 komut kabul eder:
@@ -35,6 +35,7 @@ Protokol (JSON over Unix socket):
 
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import logging
 import os
@@ -42,11 +43,13 @@ import re
 import shutil
 import signal
 import socket
+import struct
 import subprocess
 import sys
 import threading
+import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("AIRLOCK.HELPER")
 
@@ -492,11 +495,24 @@ class HelperServer:
     Her istek JSON, her yanit JSON.
     """
 
+    # Rate limit sabitleri
+    _RATE_LIMIT: int = 2         # Pencere basina max istek
+    _RATE_WINDOW: float = 1.0    # Saniye cinsinden pencere suresi
+
     def __init__(self, socket_path: str = SOCKET_PATH) -> None:
         self._socket_path = socket_path
         self._server: Optional[socket.socket] = None
         self._running = False
         self._logger = logging.getLogger("AIRLOCK.HELPER")
+
+        # ThreadPoolExecutor — sinirli thread sayisi (DoS onlemi)
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=4, thread_name_prefix="helper"
+        )
+
+        # Thread-safe rate limiter
+        self._rate_lock = threading.Lock()
+        self._request_timestamps: Dict[str, List[float]] = {}
 
     def start(self) -> None:
         """Sunucuyu baslat ve baglantilari dinle."""
@@ -524,13 +540,8 @@ class HelperServer:
                         self._logger.error("Socket accept hatasi")
                     break
 
-                # Her baglantiyi ayri thread'de isle
-                thread = threading.Thread(
-                    target=self._handle_connection,
-                    args=(conn,),
-                    daemon=True,
-                )
-                thread.start()
+                # Her baglantiyi ThreadPool'da isle (max 4 worker)
+                self._executor.submit(self._handle_connection, conn)
 
         finally:
             self.stop()
@@ -538,6 +549,8 @@ class HelperServer:
     def stop(self) -> None:
         """Sunucuyu durdur ve temizle."""
         self._running = False
+        # ThreadPool'u kapat (beklemeden — islemdeki isler tamamlanir)
+        self._executor.shutdown(wait=False)
         if self._server:
             try:
                 self._server.close()
@@ -578,10 +591,71 @@ class HelperServer:
 
         self._server.listen(5)
 
+    def _check_peer_credentials(self, conn: socket.socket) -> bool:
+        """SO_PEERCRED ile baglanti sahibinin UID'sini dogrula (Linux only).
+
+        Sadece root (0) ve airlock kullanicisina izin verilir.
+        SO_PEERCRED mevcut degilse (macOS/BSD) uyari loglanir ve izin verilir.
+        """
+        if not hasattr(socket, "SO_PEERCRED"):
+            self._logger.warning(
+                "SO_PEERCRED desteklenmiyor (non-Linux?) — peer dogrulama atlanacak"
+            )
+            return True
+
+        try:
+            cred = conn.getsockopt(
+                socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i")
+            )
+            peer_pid, peer_uid, peer_gid = struct.unpack("3i", cred)
+
+            # airlock kullanici UID'sini bul
+            try:
+                import pwd  # noqa: PLC0415
+                expected_uid = pwd.getpwnam("airlock").pw_uid
+            except (KeyError, ImportError):
+                expected_uid = -1   # airlock kullanicisi yok — sadece root'a izin ver
+
+            if peer_uid != 0 and peer_uid != expected_uid:
+                self._logger.warning(
+                    "REJECTED: yetkisiz UID=%d (PID=%d, GID=%d)",
+                    peer_uid, peer_pid, peer_gid,
+                )
+                conn.sendall(json.dumps(
+                    {"ok": False, "error": "REJECTED: yetkisiz kullanici"}
+                ).encode("utf-8"))
+                return False
+
+            return True
+        except (OSError, struct.error) as exc:
+            self._logger.warning("SO_PEERCRED okunamadi: %s — baglanti reddediliyor", exc)
+            return False
+
+    def _check_rate_limit(self, cmd: str) -> bool:
+        """Thread-safe rate limit kontrolu.
+
+        Her komut tipi icin pencere basina max _RATE_LIMIT istek.
+        """
+        with self._rate_lock:
+            now = time.monotonic()
+            timestamps = self._request_timestamps.get(cmd, [])
+            # Pencere disindaki kayitlari temizle
+            timestamps = [t for t in timestamps if now - t < self._RATE_WINDOW]
+            if len(timestamps) >= self._RATE_LIMIT:
+                return False
+            timestamps.append(now)
+            self._request_timestamps[cmd] = timestamps
+            return True
+
     def _handle_connection(self, conn: socket.socket) -> None:
-        """Tek baglantiyi isle: oku -> parse -> calistir -> yanitla."""
+        """Tek baglantiyi isle: peer dogrula -> oku -> parse -> rate limit -> calistir -> yanitla."""
         try:
             conn.settimeout(_CMD_TIMEOUT)
+
+            # SO_PEERCRED peer credential kontrolu
+            if not self._check_peer_credentials(conn):
+                return
+
             raw = conn.recv(_MAX_MSG_SIZE)
             if not raw:
                 return
@@ -596,6 +670,14 @@ class HelperServer:
 
             # Komut dispatch
             cmd = request.get("cmd", "")
+
+            # Rate limit kontrolu
+            if not self._check_rate_limit(cmd):
+                self._logger.warning("RATE_LIMITED: '%s' komutu cok sik", cmd)
+                response = {"ok": False, "error": "RATE_LIMITED"}
+                conn.sendall(json.dumps(response).encode("utf-8"))
+                return
+
             handler = _HANDLERS.get(cmd)
 
             if handler is None:
